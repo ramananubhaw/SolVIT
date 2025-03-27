@@ -1,9 +1,8 @@
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 
 const verifyPassword = async (inputPassword, storedHash) => {
     try {
-        const verified = await bcrypt.compare(inputPassword, storedHash);
-        return verified;
+        return await bcrypt.compare(inputPassword, storedHash);
     }
     catch(error) {
         console.log(error);
