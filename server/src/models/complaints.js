@@ -1,11 +1,6 @@
 import mongoose from "mongoose";
 
 const complaintSchema = new mongoose.Schema({
-    user_id: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "users",
-        required: true
-    },
     reg_no: {
         type: String,
         required: true

@@ -6,7 +6,8 @@ import {dirname, resolve} from "path"; // dirname
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import userRouter from "./routes/userRouter.js";
-import complaintRouter from "./routes/complaintRouter.js";
+// import complaintRouter from "./routes/complaintRouter.js";
+import adminRouter from "./routes/adminRoutes.js";
 
 // configuring path to environment variables
 const __filename = fileURLToPath(import.meta.url); // points to current file
@@ -18,23 +19,16 @@ app.use(cors());
 app.use(express.json());
 app.use(cookieParser());
 app.use(express.urlencoded({extended: true}));
-// app.use(session({
-//     saveUninitialized: false,
-//     resave: false,
-//     secret: process.env.SECRET,
-//     cookie: {
-//         maxAge: 30000 
-//     }
-// }))
 
 // Setting up the routers
-app.use("/api/users", userRouter)
-app.use("/api/complaints", complaintRouter)
+app.use("/api/users", userRouter);
+// app.use("/api/complaints", complaintRouter);
+app.use("/api/admin", adminRouter);
 
 const port = process.env.PORT || 3000;
 
 app.get("/", (req,res) => {
-    res.send("Server running here.")
+    res.send("<h1>Welcome to SolVIT!!!</h1> <h2>VIT's very own online portal for its hostellers to register and resolve complaints.</h2>")
 });
 
 connectDB()

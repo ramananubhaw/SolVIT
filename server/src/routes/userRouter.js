@@ -1,14 +1,21 @@
 import express from "express";
-import {getUser, registerUser, loginUser, logoutUser, currentUser, deleteUser, updateUser} from "../controllers/userController.js";
+import {registerUser, loginUser, logoutUser, currentUser, updateUser, getAllComplaints, registerComplaint, updateComplaint, deleteComplaint} from "../controllers/userController.js";
+import validateToken from "../middlewares/validateToken.js";
 
 const userRouter = express.Router();
 
-userRouter.route("/details/:reg_no").get(getUser)
 userRouter.route("/register").post(registerUser);
 userRouter.route("/login").post(loginUser);
-userRouter.route("/logout").post(logoutUser);
-userRouter.route("/current").get(currentUser);
-userRouter.route("/delete/:reg_no").delete(deleteUser);
-userRouter.route("/update").put(updateUser);
+
+// protected routes (require authentication)
+userRouter.route("/logout").post(validateToken, logoutUser);
+userRouter.route("/current").get(validateToken, currentUser);
+userRouter.route("/update").put(validateToken, updateUser);
+
+// complaint routes for user
+userRouter.route("/complaints/details").get(validateToken, getAllComplaints);
+userRouter.route("/complaints/register").post(validateToken, registerComplaint);
+userRouter.route("/complaints/update/:id").put(validateToken, updateComplaint);
+userRouter.route("/complaints/delete/:id").delete(validateToken, deleteComplaint);
 
 export default userRouter;

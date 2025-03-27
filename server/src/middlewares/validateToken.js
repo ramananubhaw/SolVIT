@@ -1,13 +1,13 @@
 import jwt from "jsonwebtoken";
 
-const validateToken = (req, res, next) => {
+const validateToken = (req, res) => {
     // console.log(req.path);
     if (!req.cookies || !req.cookies.access_token) {
         if (req.path == "/logout") {
             res.status(401).json({message: "Logged out already."});
         }
         else {
-            res.status(401).json({message: "Token expired."});
+            res.status(401).json({message: "You are not logged in."});
         }
         return;
     }
@@ -18,12 +18,7 @@ const validateToken = (req, res, next) => {
             res.status(401).json({message: "Authorization failed."});
             return;
         }
-        if (req.path == "/logout") {
-            next();
-        }
-        else {
-            next(decoded);
-        }
+        req.decoded = decoded;
     });
 };
 
@@ -38,12 +33,12 @@ const validateToken = (req, res) => {
                 res.status(401).json({message: "User not authorized."});
                 return;
             }
-            console.log(decoded);
-            return decoded;
+            req.decoded = decoded;
         })
     }
-    console.log("Authorization failed.");
-    return;
+    else {
+        console.log("Authorization failed.");
+    }
 };
 */
 

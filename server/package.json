@@ -1,5 +1,5 @@
 {
-  "name": "complaint-box",
+  "name": "solvit",
   "version": "1.0.0",
   "description": "An online complaint registration portal for hostel inmates.",
   "main": "server.js",
