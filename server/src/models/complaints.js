@@ -28,6 +28,11 @@ const complaintSchema = new mongoose.Schema({
         enum: ["pending", "solved"],
         default: "pending",
         required: true
+    },
+    priority: {
+        type: String,
+        enum: ["Normal", "Problematic", "Critical"],
+        default: null
     }
 }, {timestamps: true});
 

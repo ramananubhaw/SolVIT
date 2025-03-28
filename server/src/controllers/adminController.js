@@ -255,7 +255,7 @@ export const updateComplaintStatus = async (req,res) => {
             res.status(404).json({message: "Complaint not found."});
             return;
         }
-        const newStatus = (complaint.status=="pending") ? "resolved" : "pending";
+        const newStatus = (complaint.status=="pending") ? "solved" : "pending";
         const updatedComplaint = await complaints.findOneAndUpdate({reg_no: reg_no, _id: complaint_id}, {status: newStatus}, {new: true});
         res.status(200).json({message: "Complaint status updated successfully.", complaint: updatedComplaint});
     }
@@ -276,14 +276,23 @@ export const deleteComplaint = async (req, res) => {
         }
         const { id } = req.params;
         const block = req.decoded.data.block;
-        const complaint = await complaints.findOne({_id: id, block: block});
+        let complaint;
+        
+        if (block === "MH-*" || block === "LH-*") {
+            complaint = await complaints.findOne({_id: id});
+        } else {
+            complaint = await complaints.findOne({_id: id, block: block});
+        }
+
         if (!complaint) {
             return res.status(404).json({ message: "Complaint not found." });
         }
-        if (complaint.status=="pending") {
+
+        if (complaint.status === "pending") {
             return res.status(400).json({message: "Admin can only delete resolved complaints."});
         }
-        await complaints.deleteOne({ _id: id, block: block });
+
+        await complaints.deleteOne({ _id: id });
         res.status(200).json({ message: "Complaint deleted successfully." });
     }
     catch (error) {
@@ -303,26 +312,47 @@ export const setComplaintPriority = async (req, res) => {
             return;
         }
         const { id } = req.query;
-        console.log(id)
         const block = req.decoded.data.block;
-        console.log(block)
-        // console.log("MongoDB readyState:", mongoose.connection.readyState); // Should be `1` (connected)
-        const complaint = await complaints.findOne({_id: id, block: block});
+        let complaint;
+        
+        if (block === "MH-*" || block === "LH-*") {
+            complaint = await complaints.findOne({_id: id});
+        } else {
+            complaint = await complaints.findOne({_id: id, block: block});
+        }
+
         if (!complaint) {
             res.status(404).json({ message: "Complaint not found." });
             return;
         }
-        console.log(complaint);
-        if (complaint.status=="solved") {
+
+        if (complaint.status === "solved") {
             res.status(400).json({message: "Complaint already resolved."});
             return;
         }
-        console.log(complaint.complaint);
+
         const {label, score} = await categorizeComplaint(complaint.complaint);
-        console.log(label, score);
-        // await complaints.deleteOne({ _id: id, block: block });
-        const priority = await priorities.create({complaint_id: id, priority: label, score: score});
-        res.status(200).json({ message: "Complaint assigned priority successfully.", priority: priority });
+        
+        // Create priority record
+        const priority = await priorities.create({
+            complaint_id: id, 
+            priority: label, 
+            score: score
+        });
+        
+        // Update complaint with priority
+        const updatedComplaint = await complaints.findOneAndUpdate(
+            { _id: id },
+            { priority: label },
+            { new: true }
+        );
+        
+        res.status(200).json({ 
+            success: true,
+            message: "Complaint assigned priority successfully.", 
+            priority: priority,
+            complaint: updatedComplaint
+        });
     }
     catch (error) {
         console.error(error);

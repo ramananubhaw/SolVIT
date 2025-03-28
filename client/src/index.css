@@ -2,8 +2,56 @@
 @tailwind components;
 @tailwind utilities;
 
-* {
-  background-color: #000302;
+@layer base {
+  body {
+    @apply bg-[#121A21] text-white;
+  }
+}
+
+@layer components {
+  .form-input {
+    @apply bg-[#243647] text-white placeholder-gray-400 border-none rounded-md px-3 py-2 w-full focus:ring-2 focus:ring-[#1A80E5] focus:outline-none;
+  }
+
+  .form-label {
+    @apply block text-sm font-medium text-white mb-1;
+  }
+
+  .form-select {
+    @apply bg-[#243647] text-white border-none rounded-md px-3 py-2 w-full focus:ring-2 focus:ring-[#1A80E5] focus:outline-none;
+  }
+}
+
+.search-input {
+  @apply bg-[#243647] text-white placeholder-gray-400 border-none rounded-md;
+}
+
+.filter-button {
+  @apply bg-[#243647] text-white px-4 py-2 rounded-md hover:bg-[#2c4056] transition-colors;
+}
+
+.filter-button.active {
+  @apply bg-[#1A80E5];
+}
+
+.complaint-card {
+  @apply bg-[#243647] rounded-lg p-4 mb-4;
+}
+
+.logout-button {
+  @apply bg-[#1A80E5] text-white px-4 py-2 rounded-md hover:bg-[#1666b8] transition-colors;
+}
+
+.navbar {
+  @apply bg-[#243647] text-white;
+}
+
+.table-header {
+  @apply bg-[#243647] text-white px-4 py-2;
+}
+
+.table-row {
+  @apply border-b border-[#243647];
 }
 
 /* :root {

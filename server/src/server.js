@@ -16,7 +16,15 @@ const __dirname = dirname(__filename); // points to the current directory
 dotenv.config({path: resolve(__dirname,"../.env")})
 
 const app = express();
-app.use(cors());
+
+// CORS configuration
+app.use(cors({
+  origin: 'http://localhost:5173', // Vite's default port
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Accept']
+}));
+
 app.use(express.json());
 app.use(cookieParser());
 app.use(express.urlencoded({extended: true}));
