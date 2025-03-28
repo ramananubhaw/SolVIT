@@ -8,6 +8,7 @@ import cors from "cors";
 import userRouter from "./routes/userRouter.js";
 // import complaintRouter from "./routes/complaintRouter.js";
 import adminRouter from "./routes/adminRoutes.js";
+// import categorizeComplaint from "./middlewares/categorizeComplaint.js";
 
 // configuring path to environment variables
 const __filename = fileURLToPath(import.meta.url); // points to current file
@@ -34,7 +35,9 @@ app.get("/", (req,res) => {
 connectDB()
 .then(() => {
     app.listen(port, () => {
-        console.log(`Server running on port ${port}.`)
+        console.log(`Server running on port ${port}.`);
+        // const {label, score} = await categorizeComplaint("AC not cooling properly.");
+        // console.log(label, score);
     })
 })
 .catch(error => {

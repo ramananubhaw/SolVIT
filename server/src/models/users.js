@@ -22,7 +22,6 @@ const userSchema = new mongoose.Schema({
     },
     block: {
         type: String,
-        maxlength: 2,
         required: true
     },
     room_no: {

@@ -1,13 +1,16 @@
 import admins from "../models/admins.js";
 import users from "../models/users.js";
 import complaints from "../models/complaints.js";
+import priorities from "../models/priorities.js";
 import hashPassword from "../middlewares/hashPassword.js";
 import verifyPassword from "../middlewares/verifyPassword.js";
+import categorizeComplaint from "../middlewares/categorizeComplaint.js";
 import jwt from "jsonwebtoken";
+import mongoose from "mongoose";
 // import validateToken from "../middlewares/validateToken.js";
 
 // @method GET
-// @route /api/admin/details/:reg_no
+// @route /api/admin/details
 // @access PRIVATE (admin)
 export const getUser = async (req,res) => {
     try {
@@ -15,7 +18,7 @@ export const getUser = async (req,res) => {
             res.status(403).json({message: "Access denied, admin only."});
             return;
         }
-        const reg_no = req.params.reg_no;
+        const {reg_no} = req.query;
         const user = await users.findOne({reg_no: reg_no}).select({"_id":0, "hashedPassword":0, "__v":0});
         if (!user) {
             res.status(404).json({message: "User not found."});
@@ -32,18 +35,18 @@ export const getUser = async (req,res) => {
 
 // @method POST
 // @route /api/admin/register
-// @access PRIVATE (admin)
+// @access PUBLIC (admin)
 // @request body {name, email_id, phone_no, block, password}
 export const registerAdmin = async (req,res) => {
     try {
-        if (!req.decoded || req.decoded.data.role!="admin") {
-            res.status(403).json({message: "Access denied, admin only."});
-            return;
-        }
-        const adminBlock = req.decoded.data.block;
-        if (adminBlock!="MH-*" || adminBlock!="LH-*") {
-            return res.status(400).json({message: "Only main office can register block admins or main office admins."});
-        }
+        // if (!req.decoded || req.decoded.data.role!="admin") {
+        //     res.status(403).json({message: "Access denied, admin only."});
+        //     return;
+        // }
+        // const adminBlock = req.decoded.data.block;
+        // if (adminBlock!="MH-*" || adminBlock!="LH-*") {
+        //     return res.status(400).json({message: "Only main office can register block admins or main office admins."});
+        // }
         let {name, email_id, phone_no, block, password} = req.body;
         const admin = await admins.findOne({email_id: email_id, block: block});
         if (admin) {
@@ -64,7 +67,7 @@ export const registerAdmin = async (req,res) => {
 // @method POST
 // @route /api/admin/login
 // @access PRIVATE (admin)
-// @request body {email, password}
+// @request body {email_id, password}
 export const loginAdmin = async (req,res) => {
     try {
         const {email_id, password} = req.body;
@@ -96,7 +99,7 @@ export const loginAdmin = async (req,res) => {
             // httpOnly: true,
             // secure: true,
             sameSite: "strict",
-            maxAge: process.env.AUTHENTICATION_COOKIE_EXPIRY_TIME // increase expiration time of cookie in production
+            // maxAge: process.env.AUTHENTICATION_COOKIE_EXPIRY_TIME // increase expiration time of cookie in production
         }); // enable the httpOnly and secure flags in production
         res.status(200).json({message: "Logged in successfully."});
     }
@@ -238,8 +241,8 @@ export const updateComplaintStatus = async (req,res) => {
             res.status(403).json({message: "Access denied, admin only."});
             return;
         }
-        const reg_no = req.params.reg_no;
-        const complaint_id = req.params.id;
+        const reg_no = req.query.reg_no;
+        const complaint_id = req.query.id;
         const block = req.decoded.data.block;
         let complaint;
         if (block=="MH-*" || block=="LH-*") {
@@ -282,6 +285,44 @@ export const deleteComplaint = async (req, res) => {
         }
         await complaints.deleteOne({ _id: id, block: block });
         res.status(200).json({ message: "Complaint deleted successfully." });
+    }
+    catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Internal server error." });
+    }
+};
+
+// @method POST
+// @route /api/admin/complaints/categorize
+// @access PRIVATE (admin)
+// @request query {id}
+export const setComplaintPriority = async (req, res) => {
+    try {
+        if (!req.decoded || req.decoded.data.role!="admin") {
+            res.status(403).json({message: "Access denied, admin only."});
+            return;
+        }
+        const { id } = req.query;
+        console.log(id)
+        const block = req.decoded.data.block;
+        console.log(block)
+        // console.log("MongoDB readyState:", mongoose.connection.readyState); // Should be `1` (connected)
+        const complaint = await complaints.findOne({_id: id, block: block});
+        if (!complaint) {
+            res.status(404).json({ message: "Complaint not found." });
+            return;
+        }
+        console.log(complaint);
+        if (complaint.status=="solved") {
+            res.status(400).json({message: "Complaint already resolved."});
+            return;
+        }
+        console.log(complaint.complaint);
+        const {label, score} = await categorizeComplaint(complaint.complaint);
+        console.log(label, score);
+        // await complaints.deleteOne({ _id: id, block: block });
+        const priority = await priorities.create({complaint_id: id, priority: label, score: score});
+        res.status(200).json({ message: "Complaint assigned priority successfully.", priority: priority });
     }
     catch (error) {
         console.error(error);

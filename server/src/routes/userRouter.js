@@ -15,7 +15,7 @@ userRouter.route("/update").put(validateToken, updateUser);
 // complaint routes for user
 userRouter.route("/complaints/details").get(validateToken, getAllComplaints);
 userRouter.route("/complaints/register").post(validateToken, registerComplaint);
-userRouter.route("/complaints/update/:id").put(validateToken, updateComplaint);
-userRouter.route("/complaints/delete/:id").delete(validateToken, deleteComplaint);
+userRouter.route("/complaints/update").put(validateToken, updateComplaint);
+userRouter.route("/complaints/delete").delete(validateToken, deleteComplaint);
 
 export default userRouter;

@@ -7,7 +7,6 @@ const complaintSchema = new mongoose.Schema({
     },
     block: {
         type: String,
-        maxlength: 2,
         required: true
     },
     room_no: {
@@ -16,7 +15,7 @@ const complaintSchema = new mongoose.Schema({
     },
     category: {
         type: String,
-        enum: ["electrical", "civil", "plumbing", "cleaning", "medical", "sanitation", "food", "laundry", "security", "ragging/bullying", "staff behaviour", "internet_connectivity", "other"],
+        enum: ["electrical", "civil", "plumbing", "cleaning", "medical", "sanitation", "food", "laundry", "security", "ragging/bullying", "staff behaviour", "internet connectivity", "other"],
         required: true
     },
     complaint: {
