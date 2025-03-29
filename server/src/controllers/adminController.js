@@ -6,7 +6,8 @@ import hashPassword from "../middlewares/hashPassword.js";
 import verifyPassword from "../middlewares/verifyPassword.js";
 import categorizeComplaint from "../middlewares/categorizeComplaint.js";
 import jwt from "jsonwebtoken";
-import mongoose from "mongoose";
+// import mongoose from "mongoose";
+import { sendResolutionEmail } from '../utils/emailService.js';
 // import validateToken from "../middlewares/validateToken.js";
 
 // @method GET
@@ -256,8 +257,34 @@ export const updateComplaintStatus = async (req,res) => {
             return;
         }
         const newStatus = (complaint.status=="pending") ? "solved" : "pending";
-        const updatedComplaint = await complaints.findOneAndUpdate({reg_no: reg_no, _id: complaint_id}, {status: newStatus}, {new: true});
-        res.status(200).json({message: "Complaint status updated successfully.", complaint: updatedComplaint});
+        const updatedComplaint = await complaints.findOneAndUpdate(
+            {reg_no: reg_no, _id: complaint_id}, 
+            {status: newStatus}, 
+            {new: true}
+        );
+
+        // Send email notification if complaint is resolved
+        if (newStatus === "solved") {
+            try {
+                const user = await users.findOne({ reg_no: reg_no });
+                if (user && user.email_id) {
+                    await sendResolutionEmail(user.email_id, {
+                        category: complaint.category,
+                        complaint: complaint.complaint,
+                        block: complaint.block,
+                        room_no: complaint.room_no
+                    });
+                }
+            } catch (emailError) {
+                console.error('Failed to send resolution email:', emailError);
+                // Don't let email failure affect the complaint update
+            }
+        }
+
+        res.status(200).json({
+            message: "Complaint status updated successfully.", 
+            complaint: updatedComplaint
+        });
     }
     catch(error) {
         console.log(error);

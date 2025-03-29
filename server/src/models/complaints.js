@@ -20,7 +20,7 @@ const complaintSchema = new mongoose.Schema({
     },
     complaint: {
         type: String,
-        maxlength: 100,
+        maxlength: 500,
         required: true
     },
     status: {
