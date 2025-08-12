@@ -28,4 +28,4 @@ export const PRIORITY_LEVELS = {
 export const USER_ROLES = {
   USER: 'user',
   ADMIN: 'admin'
-}; 
+};

@@ -122,4 +122,4 @@ const ComplaintForm = () => {
   );
 };
 
-export default ComplaintForm; 
+export default ComplaintForm;

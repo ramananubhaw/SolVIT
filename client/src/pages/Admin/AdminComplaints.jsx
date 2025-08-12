@@ -109,4 +109,4 @@ const AdminComplaints = () => {
   );
 };
 
-export default AdminComplaints; 
+export default AdminComplaints;
