@@ -1,24 +1,19 @@
 const Footer = () => {
-    return (
-      <footer className="bg-gray-800 text-white py-8">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <div className="mb-4 md:mb-0">
-              <h3 className="text-xl font-bold">Complaint Portal</h3>
-              <p className="text-gray-400">Resolving your concerns efficiently</p>
-            </div>
-            <div className="flex space-x-4">
-              <a href="/about" className="hover:text-blue-400">About</a>
-              <a href="/contact" className="hover:text-blue-400">Contact</a>
-              <a href="/privacy" className="hover:text-blue-400">Privacy Policy</a>
-            </div>
+  return (
+    <footer className="bg-gray-800 text-gray-300">
+      <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center">
+          <div>
+            <h3 className="text-lg font-semibold">SolVIT</h3>
+            <p className="text-sm">VIT's Hostel Complaint Management System</p>
           </div>
-          <div className="mt-8 text-center text-gray-400 text-sm">
-            &copy; {new Date().getFullYear()} Complaint Portal. All rights reserved.
+          <div className="text-sm">
+            <p>&copy; {new Date().getFullYear()} SolVIT. All rights reserved.</p>
           </div>
         </div>
-      </footer>
-    );
-  };
-  
-  export default Footer;
+      </div>
+    </footer>
+  );
+};
+
+export default Footer;

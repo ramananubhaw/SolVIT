@@ -1,81 +1,124 @@
-import { createContext, useContext, useState } from 'react';
-import { 
-  getAllComplaints as fetchAllComplaints,
-  registerComplaint as createComplaint,
-  updateComplaint as updateExistingComplaint,
-  deleteComplaint as removeComplaint
-} from '../services/complaints';
+import { createContext, useContext, useState, useCallback } from 'react';
+import api from '../utils/api';
+import { useAuth } from './AuthContext';
 
-const ComplaintContext = createContext();
+const ComplaintContext = createContext(null);
 
 export const ComplaintProvider = ({ children }) => {
+  const { isAdmin } = useAuth();
   const [complaints, setComplaints] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
 
-  const getAllComplaints = async () => {
+  const fetchComplaints = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await fetchAllComplaints();
-      setComplaints(data);
-    } catch (err) {
-      setError(err);
+      const endpoint = isAdmin ? '/admin/complaints/details' : '/users/complaints/details';
+      const response = await api.get(endpoint);
+      setComplaints(response.data.complaints);
+      return { success: true };
+    } catch (error) {
+      console.error('Error fetching complaints:', error);
+      return { 
+        success: false, 
+        error: error.response?.data?.message || 'Failed to fetch complaints' 
+      };
     } finally {
       setLoading(false);
     }
-  };
+  }, [isAdmin]);
 
   const registerComplaint = async (complaintData) => {
-    setLoading(true);
     try {
-      const newComplaint = await createComplaint(complaintData);
-      setComplaints([...complaints, newComplaint]);
-    } catch (err) {
-      setError(err);
-    } finally {
-      setLoading(false);
+      await api.post('/users/complaints/register', complaintData);
+      await fetchComplaints();
+      return { success: true };
+    } catch (error) {
+      return { 
+        success: false, 
+        error: error.response?.data?.message || 'Failed to register complaint' 
+      };
     }
   };
 
-  const updateComplaint = async (id, complaintData) => {
-    setLoading(true);
+  const updateComplaint = async (id, reg_no, updateData) => {
     try {
-      const updatedComplaint = await updateExistingComplaint(id, complaintData);
-      setComplaints(complaints.map(c => 
-        c._id === id ? updatedComplaint : c
-      ));
-    } catch (err) {
-      setError(err);
-    } finally {
-      setLoading(false);
+      const endpoint = isAdmin ? '/admin/complaints/update' : '/users/complaints/update';
+      if (updateData.status) {
+        await api.put(`${endpoint}?id=${id}&reg_no=${reg_no}`, { status: updateData.status });
+      } else {
+        await api.put(`${endpoint}?id=${id}&reg_no=${reg_no}`, updateData);
+      }
+      await fetchComplaints();
+      return { success: true };
+    } catch (error) {
+      console.error('Update error:', error);
+      return { 
+        success: false, 
+        error: error.response?.data?.message || 'Failed to update complaint' 
+      };
     }
   };
 
-  const deleteComplaint = async (id) => {
-    setLoading(true);
+  const deleteComplaint = async (id, reg_no) => {
     try {
-      await removeComplaint(id);
-      setComplaints(complaints.filter(c => c._id !== id));
-    } catch (err) {
-      setError(err);
-    } finally {
-      setLoading(false);
+      if (isAdmin) {
+        await api.delete(`/admin/complaints/delete/${id}`);
+      } else {
+        await api.delete('/users/complaints/delete', { params: { id } });
+      }
+      await fetchComplaints();
+      return { success: true };
+    } catch (error) {
+      console.error('Delete error:', error);
+      return { 
+        success: false, 
+        error: error.response?.data?.message || 'Failed to delete complaint' 
+      };
     }
+  };
+
+  const categorizePriority = async (id) => {
+    try {
+      const response = await api.post(`/admin/complaints/categorize?id=${id}`);
+      if (response.data.success) {
+        await fetchComplaints();
+        return { success: true };
+      } else {
+        return { 
+          success: false, 
+          error: response.data.message || 'Failed to categorize complaint' 
+        };
+      }
+    } catch (error) {
+      console.error('Categorize error:', error);
+      return { 
+        success: false, 
+        error: error.response?.data?.message || 'Failed to categorize complaint' 
+      };
+    }
+  };
+
+  const value = {
+    complaints,
+    loading,
+    fetchComplaints,
+    registerComplaint,
+    updateComplaint,
+    deleteComplaint,
+    categorizePriority
   };
 
   return (
-    <ComplaintContext.Provider value={{
-      complaints,
-      loading,
-      error,
-      getAllComplaints,
-      registerComplaint,
-      updateComplaint,
-      deleteComplaint
-    }}>
+    <ComplaintContext.Provider value={value}>
       {children}
     </ComplaintContext.Provider>
   );
 };
 
-export const useComplaints = () => useContext(ComplaintContext);
+export const useComplaints = () => {
+  const context = useContext(ComplaintContext);
+  if (!context) {
+    throw new Error('useComplaints must be used within a ComplaintProvider');
+  }
+  return context;
+};

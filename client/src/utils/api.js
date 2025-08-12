@@ -1,29 +1,52 @@
 import axios from 'axios';
 
-const API = axios.create({
-  baseURL: 'http://localhost:5000/api',
+const API_BASE_URL = 'http://localhost:3000/api';
+
+const api = axios.create({
+  baseURL: API_BASE_URL,
   withCredentials: true,
+  headers: {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json'
+  },
 });
 
-// Request interceptor
-API.interceptors.request.use((config) => {
-  const token = localStorage.getItem('adminToken');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
-
-// Response interceptor
-API.interceptors.response.use(
-  (response) => response,
+// Add request interceptor for debugging
+api.interceptors.request.use(
+  (config) => {
+    console.log('API Request:', {
+      url: config.url,
+      method: config.method,
+      data: config.data,
+      headers: config.headers
+    });
+    return config;
+  },
   (error) => {
-    if (error.response?.status === 401) {
-      localStorage.removeItem('adminToken');
-      window.location.href = '/admin/login';
-    }
+    console.error('API Request Error:', error);
     return Promise.reject(error);
   }
 );
 
-export default API;
+// Add response interceptor for debugging
+api.interceptors.response.use(
+  (response) => {
+    console.log('API Response:', {
+      url: response.config.url,
+      status: response.status,
+      data: response.data
+    });
+    return response;
+  },
+  (error) => {
+    console.error('API Response Error:', {
+      url: error.config?.url,
+      status: error.response?.status,
+      data: error.response?.data,
+      message: error.message
+    });
+    return Promise.reject(error);
+  }
+);
+
+export default api;

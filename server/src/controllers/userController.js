@@ -3,6 +3,7 @@ import complaints from "../models/complaints.js";
 import hashPassword from "../middlewares/hashPassword.js";
 import verifyPassword from "../middlewares/verifyPassword.js";
 import jwt from "jsonwebtoken";
+import mongoose from "mongoose";
 
 // @method POST
 // @route /api/users/register
@@ -31,17 +32,17 @@ export const registerUser = async (req,res) => {
 // @method POST
 // @route /api/users/login
 // @access PUBLIC (user)
-// @request body {email, username, password}
+// @request body {email_id, password}
 export const loginUser = async (req,res) => {
     try {
-        const {email_id, username, password} = req.body;
-        if (!email_id || !username || !password) {
+        const {email_id, password} = req.body;
+        if (!email_id || !password) {
             res.status(400).json({message: "All fields are mandatory"});
             return;
         }
-        const user = await users.findOne({reg_no: username, email_id: email_id});
+        const user = await users.findOne({email_id: email_id});
         if (!user) {
-            res.status(400).json({message: "Invalid credentials."});
+            res.status(400).json({message: "User does not exist."});
             return;
         }
         const verified = await verifyPassword(password, user.hashedPassword);
@@ -63,7 +64,7 @@ export const loginUser = async (req,res) => {
             // httpOnly: true,
             // secure: true,
             sameSite: "strict",
-            maxAge: process.env.AUTHENTICATION_COOKIE_EXPIRY_TIME // increase expiration time of cookie in production
+            // maxAge: process.env.AUTHENTICATION_COOKIE_EXPIRY_TIME // increase expiration time of cookie in production
         }); // enable the httpOnly and secure flags in production
         res.status(200).json({message: "Logged in successfully."});
     }
@@ -217,34 +218,44 @@ export const registerComplaint = async (req,res) => {
 };
 
 // @method PUT
-// @route /api/users/complaints/update/:id
+// @route /api/users/complaints/update
 // @access PRIVATE (user)
 // @request body {category, complaint}
+// @request query {id}
 export const updateComplaint = async (req,res) => {
     try {
         if (!req.decoded || req.decoded.data.role!="user") {
             res.status(403).json({message: "Access denied, users only."});
             return;
         }
-        // const user_id = req.decoded.data.id;
+        const {id} = req.query;
         const reg_no = req.decoded.data.username;
         const block = req.decoded.data.block;
         const room_no = req.decoded.data.room_no;
-        // const user = await users.findOne({reg_no: reg_no}).select({block:1, room_no:1});
-        // console.log(user);
-        const {category, complaint} = req.body;
-        const registeredComplaint = await complaints.findOne({reg_no: reg_no, category: category, complaint: complaint});
+        const {category, complaint, status} = req.body;
+        
+        const registeredComplaint = await complaints.findOne({_id: id, reg_no: reg_no});
         if (!registeredComplaint) {
             return res.status(404).json({message: "Complaint not found."});
         }
         if (registeredComplaint.status=="solved") {
-            return res.status(400).json({message: "Resolved complaints can't be updated."});
+            return res.status(400).json({message: "Solved complaints can't be updated."});
         }
-        const updatedComplaint = await complaints.findOneAndUpdate({reg_no: reg_no, block: block, room_no: room_no}, {category, complaint}, {new: true});
+
+        const updateData = {};
+        if (category) updateData.category = category;
+        if (complaint) updateData.complaint = complaint;
+        if (status) updateData.status = status;
+
+        const updatedComplaint = await complaints.findOneAndUpdate(
+            {_id: id, reg_no: reg_no, block: block, room_no: room_no}, 
+            updateData, 
+            {new: true}
+        );
         res.status(200).json({
             message: "Complaint updated successfully.",
             complaint: updatedComplaint
-        })
+        });
     }
     catch(error) {
         console.log(error);
@@ -253,16 +264,19 @@ export const updateComplaint = async (req,res) => {
 };
 
 // @method DELETE
-// @route /api/users/complaints/delete/:id
+// @route /api/users/complaints/delete
 // @access PRIVATE (user)
+// @request params {id}
 export const deleteComplaint = async (req, res) => {
     try {
         if (!req.decoded || req.decoded.data.role!="user") {
             res.status(403).json({message: "Access denied, users only."});
             return;
         }
-        const { id } = req.params;
+        const { id } = req.query;
+        console.log(id);
         const reg_no = req.decoded.data.username;
+        // console.log(reg_no)
         const complaint = await complaints.findOne({_id: id, reg_no: reg_no});
         if (!complaint) {
             return res.status(404).json({ message: "Complaint not found." });

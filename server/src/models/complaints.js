@@ -7,7 +7,6 @@ const complaintSchema = new mongoose.Schema({
     },
     block: {
         type: String,
-        maxlength: 2,
         required: true
     },
     room_no: {
@@ -16,7 +15,7 @@ const complaintSchema = new mongoose.Schema({
     },
     category: {
         type: String,
-        enum: ["electrical", "civil", "plumbing", "cleaning", "medical", "sanitation", "food", "laundry", "security", "ragging/bullying", "staff behaviour", "internet_connectivity", "other"],
+        enum: ["electrical", "civil", "plumbing", "cleaning", "medical", "sanitation", "food", "laundry", "security", "ragging/bullying", "staff behaviour", "internet connectivity", "other"],
         required: true
     },
     complaint: {
@@ -29,6 +28,11 @@ const complaintSchema = new mongoose.Schema({
         enum: ["pending", "solved"],
         default: "pending",
         required: true
+    },
+    priority: {
+        type: String,
+        enum: ["Normal", "Problematic", "Critical"],
+        default: null
     }
 }, {timestamps: true});
 

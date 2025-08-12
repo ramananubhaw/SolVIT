@@ -1,81 +1,69 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { registerComplaint } from '../../services/complaints';
+import { useComplaints } from '../../context/ComplaintContext';
+import { COMPLAINT_CATEGORIES } from '../../utils/constants';
 
 const ComplaintForm = () => {
+  const { registerComplaint } = useComplaints();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [formData, setFormData] = useState({
-    title: '',
-    description: '',
     category: '',
-    priority: 'medium'
+    complaint: ''
   });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState(null);
-  const navigate = useNavigate();
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
+    setError('');
+    setSuccess('');
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setIsSubmitting(true);
-    setError(null);
-    
+    setError('');
+    setSuccess('');
+
+    // Validation
+    if (!formData.category) {
+      setError('Please select a category');
+      return;
+    }
+    if (!formData.complaint || !formData.complaint.trim()) {
+      setError('Please enter a description');
+      return;
+    }
+
+    setLoading(true);
     try {
-      await registerComplaint(formData);
-      navigate('/complaints');
+      const result = await registerComplaint({
+        category: formData.category,
+        complaint: formData.complaint
+      });
+      
+      if (result.success) {
+        setSuccess('Complaint submitted successfully');
+        setFormData({ category: '', complaint: '' });
+      } else {
+        setError(result.error);
+      }
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to submit complaint');
+      setError('Failed to submit complaint');
     } finally {
-      setIsSubmitting(false);
+      setLoading(false);
     }
   };
 
   return (
-    <div className="max-w-3xl mx-auto bg-white p-6 rounded-lg shadow-md">
-      <h2 className="text-2xl font-bold text-gray-800 mb-6">Submit New Complaint</h2>
-      
-      {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-          {error}
-        </div>
-      )}
-      
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div>
-          <label htmlFor="title" className="block text-sm font-medium text-gray-700">
-            Complaint Title
-          </label>
-          <input
-            type="text"
-            id="title"
-            name="title"
-            value={formData.title}
-            onChange={handleChange}
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-            required
-          />
-        </div>
-
-        <div>
-          <label htmlFor="description" className="block text-sm font-medium text-gray-700">
-            Detailed Description
-          </label>
-          <textarea
-            id="description"
-            name="description"
-            rows="5"
-            value={formData.description}
-            onChange={handleChange}
-            className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-            required
-          ></textarea>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div className="max-w-2xl mx-auto">
+      <div className="bg-app-dark rounded-lg p-6">
+        <h2 className="text-2xl font-bold text-white mb-6">Submit a Complaint</h2>
+        
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label htmlFor="category" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="category" className="form-label">
               Category
             </label>
             <select
@@ -83,58 +71,53 @@ const ComplaintForm = () => {
               name="category"
               value={formData.category}
               onChange={handleChange}
-              className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-              required
+              className="form-select"
             >
               <option value="">Select a category</option>
-              <option value="technical">Technical Issue</option>
-              <option value="billing">Billing Problem</option>
-              <option value="service">Service Complaint</option>
-              <option value="facility">Facility Issue</option>
-              <option value="other">Other</option>
+              {COMPLAINT_CATEGORIES.map((category) => (
+                <option key={category} value={category}>
+                  {category.charAt(0).toUpperCase() + category.slice(1)}
+                </option>
+              ))}
             </select>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700">Priority</label>
-            <div className="mt-1 space-y-2">
-              {['low', 'medium', 'high'].map((level) => (
-                <div key={level} className="flex items-center">
-                  <input
-                    type="radio"
-                    id={`priority-${level}`}
-                    name="priority"
-                    value={level}
-                    checked={formData.priority === level}
-                    onChange={handleChange}
-                    className="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300"
-                  />
-                  <label htmlFor={`priority-${level}`} className="ml-2 block text-sm text-gray-700 capitalize">
-                    {level}
-                  </label>
-                </div>
-              ))}
-            </div>
+            <label htmlFor="complaint" className="form-label">
+              Description
+            </label>
+            <textarea
+              id="complaint"
+              name="complaint"
+              rows="4"
+              value={formData.complaint}
+              onChange={handleChange}
+              placeholder="Please describe your complaint in detail..."
+              className="form-input"
+            />
           </div>
-        </div>
 
-        <div className="flex justify-end space-x-3">
-          <button
-            type="button"
-            onClick={() => navigate('/complaints')}
-            className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-          >
-            Cancel
-          </button>
+          {error && (
+            <div className="text-red-500 text-sm">
+              {error}
+            </div>
+          )}
+
+          {success && (
+            <div className="text-green-500 text-sm">
+              {success}
+            </div>
+          )}
+
           <button
             type="submit"
-            disabled={isSubmitting}
-            className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={loading}
+            className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-app-blue hover:bg-[#1666b8] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-app-blue disabled:opacity-50 transition-colors"
           >
-            {isSubmitting ? 'Submitting...' : 'Submit Complaint'}
+            {loading ? 'Submitting...' : 'Submit Complaint'}
           </button>
-        </div>
-      </form>
+        </form>
+      </div>
     </div>
   );
 };

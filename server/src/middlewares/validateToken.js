@@ -1,15 +1,12 @@
 import jwt from "jsonwebtoken";
 
-const validateToken = (req, res) => {
+const validateToken = (req, res, next) => {
     // console.log(req.path);
     if (!req.cookies || !req.cookies.access_token) {
         if (req.path == "/logout") {
-            res.status(401).json({message: "Logged out already."});
+            return res.status(401).json({message: "Logged out already."});
         }
-        else {
-            res.status(401).json({message: "You are not logged in."});
-        }
-        return;
+        return res.status(401).json({message: "You are not logged in."});
     }
     const token = req.cookies.access_token;
     // console.log(token);
@@ -19,6 +16,7 @@ const validateToken = (req, res) => {
             return;
         }
         req.decoded = decoded;
+        next();
     });
 };
 
