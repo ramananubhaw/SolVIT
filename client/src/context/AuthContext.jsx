@@ -33,10 +33,17 @@ export const AuthProvider = ({ children }) => {
   const login = async (credentials, isAdmin = false) => {
     try {
       const endpoint = isAdmin ? '/admin/login' : '/users/login';
-      await api.post(endpoint, credentials);
+      // console.log(endpoint);
+      const response = await api.post(endpoint, credentials);
+      // console.log(response);
       await checkAuthStatus();
-      return { success: true };
-    } catch (error) {
+      return { 
+        success: true,
+        message: response.data?.message || 'Login successful'
+      };
+    }
+    catch (error) {
+      // console.log(error);
       return { 
         success: false, 
         error: error.response?.data?.message || 'Login failed' 
