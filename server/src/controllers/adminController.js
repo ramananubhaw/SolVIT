@@ -97,9 +97,9 @@ export const loginAdmin = async (req,res) => {
             expiresIn: process.env.JWT_TOKEN_EXPIRY_TIME // increase expiration time for JWT token in production
         });
         res.cookie("access_token", accessToken, {
-            // httpOnly: true,
-            // secure: true,
-            sameSite: "strict",
+            httpOnly: true, // false in dev
+            secure: true, // false in dev
+            sameSite: "none", // "strict" in dev
             // maxAge: process.env.AUTHENTICATION_COOKIE_EXPIRY_TIME // increase expiration time of cookie in production
         }); // enable the httpOnly and secure flags in production
         res.status(200).json({message: "Logged in successfully."});
