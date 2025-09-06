@@ -107,11 +107,38 @@ const AdminRegister = () => {
               className="form-select"
             >
               <option value="">Select Block</option>
+              {/* <!-- MH Blocks --> */}
               <option value="MH-A">MH-A</option>
               <option value="MH-B">MH-B</option>
               <option value="MH-C">MH-C</option>
+              <option value="MH-D">MH-D</option>
+              <option value="MH-E">MH-E</option>
+              <option value="MH-F">MH-F</option>
+              <option value="MH-G">MH-G</option>
+              <option value="MH-H">MH-H</option>
+              <option value="MH-J">MH-J</option>
+              <option value="MH-K">MH-K</option>
+              <option value="MH-L">MH-L</option>
+              <option value="MH-M">MH-M</option>
+              <option value="MH-N">MH-N</option>
+              <option value="MH-P">MH-P</option>
+              <option value="MH-Q">MH-Q</option>
+              <option value="MH-R">MH-R</option>
+              <option value="MH-S">MH-S</option>
+              <option value="MH-T">MH-T</option>
+
+              {/* <!-- LH Blocks --> */}
               <option value="LH-A">LH-A</option>
               <option value="LH-B">LH-B</option>
+              <option value="LH-C">LH-C</option>
+              <option value="LH-D">LH-D</option>
+              <option value="LH-E">LH-E</option>
+              <option value="LH-F">LH-F</option>
+              <option value="LH-G">LH-G</option>
+              <option value="LH-H">LH-H</option>
+              <option value="LH-J">LH-J</option>
+
+              {/* <!-- Main Hostel Offices --> */}
               <option value="MH-*">MH Main Office</option>
               <option value="LH-*">LH Main Office</option>
             </select>

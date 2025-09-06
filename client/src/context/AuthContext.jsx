@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../utils/api';
 import { USER_ROLES } from '../utils/constants';
 
@@ -7,6 +8,7 @@ const AuthContext = createContext(null);
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     checkAuthStatus();
@@ -62,6 +64,7 @@ export const AuthProvider = ({ children }) => {
       const endpoint = user?.role === USER_ROLES.ADMIN ? '/admin/logout' : '/users/logout';
       await api.post(endpoint);
       setUser(null);
+      navigate("/");
       return { success: true };
     } catch (error) {
       return { 

@@ -33,6 +33,21 @@ const Navbar = () => {
                 >
                   Complaints
                 </Link>
+                {isAdmin && (<Link
+                    to="/register"
+                    className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
+                  >
+                    Register User
+                  </Link>
+                )}
+                {isAdmin && (
+                  <Link
+                    to="/admin/register"
+                    className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
+                  >
+                    Register Admin
+                  </Link>
+                )}
                 <Link
                   to="/settings"
                   className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
@@ -60,19 +75,7 @@ const Navbar = () => {
                   to="/login"
                   className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
                 >
-                  Login
-                </Link>
-                <Link
-                  to="/register"
-                  className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
-                >
-                  Register
-                </Link>
-                <Link
-                  to="/admin/register"
-                  className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium"
-                >
-                  Admin Register
+                  User Login
                 </Link>
                 <Link
                   to="/admin/login"
