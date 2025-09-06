@@ -115,7 +115,7 @@ export const ComplaintProvider = ({ children }) => {
   );
 };
 
-export const useComplaints = () => {
+export function useComplaints() {
   const context = useContext(ComplaintContext);
   if (!context) {
     throw new Error('useComplaints must be used within a ComplaintProvider');

@@ -1,10 +1,13 @@
 const emailConfig = {
-    service: "gmail",
-    secure: true,
-    port: 465,
+    service: "smtp.gmail.com",
+    secure: false,
+    port: 587,
     auth: {
         user: process.env.GMAIL_USERNAME,
         pass: process.env.GMAIL_PASSWORD
+    },
+    tls: {
+        rejectUnauthorized: false
     }
 };
 

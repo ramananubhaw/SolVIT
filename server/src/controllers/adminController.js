@@ -6,7 +6,8 @@ import hashPassword from "../middlewares/hashPassword.js";
 import verifyPassword from "../middlewares/verifyPassword.js";
 import categorizeComplaint from "../middlewares/categorizeComplaint.js";
 import jwt from "jsonwebtoken";
-import mongoose from "mongoose";
+// import mongoose from "mongoose";
+import { sendResolutionEmail } from '../utils/emailService.js';
 // import validateToken from "../middlewares/validateToken.js";
 
 // @method GET
@@ -39,14 +40,14 @@ export const getUser = async (req,res) => {
 // @request body {name, email_id, phone_no, block, password}
 export const registerAdmin = async (req,res) => {
     try {
-        // if (!req.decoded || req.decoded.data.role!="admin") {
-        //     res.status(403).json({message: "Access denied, admin only."});
-        //     return;
-        // }
-        // const adminBlock = req.decoded.data.block;
-        // if (adminBlock!="MH-*" || adminBlock!="LH-*") {
-        //     return res.status(400).json({message: "Only main office can register block admins or main office admins."});
-        // }
+        if (!req.decoded || req.decoded.data.role!="admin") {
+            res.status(403).json({message: "Access denied, admin only."});
+            return;
+        }
+        const adminBlock = req.decoded.data.block;
+        if (adminBlock!="MH-*" || adminBlock!="LH-*") {
+            return res.status(400).json({message: "Only main hostel office can register block admins or other main hostel office admins."});
+        }
         let {name, email_id, phone_no, block, password} = req.body;
         const admin = await admins.findOne({email_id: email_id, block: block});
         if (admin) {
@@ -256,8 +257,34 @@ export const updateComplaintStatus = async (req,res) => {
             return;
         }
         const newStatus = (complaint.status=="pending") ? "solved" : "pending";
-        const updatedComplaint = await complaints.findOneAndUpdate({reg_no: reg_no, _id: complaint_id}, {status: newStatus}, {new: true});
-        res.status(200).json({message: "Complaint status updated successfully.", complaint: updatedComplaint});
+        const updatedComplaint = await complaints.findOneAndUpdate(
+            {reg_no: reg_no, _id: complaint_id}, 
+            {status: newStatus}, 
+            {new: true}
+        );
+
+        // Send email notification if complaint is resolved
+        if (newStatus === "solved") {
+            try {
+                const user = await users.findOne({ reg_no: reg_no });
+                if (user && user.email_id) {
+                    await sendResolutionEmail(user.email_id, {
+                        category: complaint.category,
+                        complaint: complaint.complaint,
+                        block: complaint.block,
+                        room_no: complaint.room_no
+                    });
+                }
+            } catch (emailError) {
+                console.error('Failed to send resolution email:', emailError);
+                // Don't let email failure affect the complaint update
+            }
+        }
+
+        res.status(200).json({
+            message: "Complaint status updated successfully.", 
+            complaint: updatedComplaint
+        });
     }
     catch(error) {
         console.log(error);

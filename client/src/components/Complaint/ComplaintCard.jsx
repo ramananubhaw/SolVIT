@@ -166,4 +166,4 @@ const ComplaintCard = ({ complaint }) => {
   );
 };
 
-export default ComplaintCard;
+export default ComplaintCard; 
