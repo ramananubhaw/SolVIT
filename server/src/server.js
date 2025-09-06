@@ -1,3 +1,5 @@
+import cron from "node-cron";
+import axios from "axios";
 import express from "express";
 import connectDB from "./config/connectDB.js";
 import dotenv from "dotenv";
@@ -6,9 +8,7 @@ import {dirname, resolve} from "path"; // dirname
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import userRouter from "./routes/userRouter.js";
-// import complaintRouter from "./routes/complaintRouter.js";
 import adminRouter from "./routes/adminRoutes.js";
-// import categorizeComplaint from "./middlewares/categorizeComplaint.js";
 
 // configuring path to environment variables
 const __filename = fileURLToPath(import.meta.url); // points to current file
@@ -31,7 +31,6 @@ app.use(express.urlencoded({extended: true}));
 
 // Setting up the routers
 app.use("/api/users", userRouter);
-// app.use("/api/complaints", complaintRouter);
 app.use("/api/admin", adminRouter);
 
 const port = process.env.PORT || 3000;
@@ -46,6 +45,15 @@ connectDB()
         console.log(`Server running on port ${port}.`);
         // const {label, score} = await categorizeComplaint("AC not cooling properly.");
         // console.log(label, score);
+        cron.schedule("*/10 * * * *", async () => {
+            try {
+                const res = await axios.get(process.env.SERVER_URL);
+                console.log("Cron job executed:", res.status, res.statusText);
+            }
+            catch (err) {
+                console.error("Cron job failed:", err.message);
+            }
+        });
     })
 })
 .catch(error => {
