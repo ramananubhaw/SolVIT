@@ -5,9 +5,9 @@ import validateToken from "../middlewares/validateToken.js";
 const adminRouter = express.Router();
 
 adminRouter.route("/login").post(loginAdmin);
-adminRouter.route("/register").post(registerAdmin);
 
 // protected routes (require authentication)
+adminRouter.route("/register").post(validateToken, registerAdmin);
 adminRouter.route("/details").get(validateToken, getUser);
 adminRouter.route("/logout").post(validateToken, logoutAdmin);
 adminRouter.route("/current").get(validateToken, currentAdmin);

@@ -40,14 +40,14 @@ export const getUser = async (req,res) => {
 // @request body {name, email_id, phone_no, block, password}
 export const registerAdmin = async (req,res) => {
     try {
-        // if (!req.decoded || req.decoded.data.role!="admin") {
-        //     res.status(403).json({message: "Access denied, admin only."});
-        //     return;
-        // }
-        // const adminBlock = req.decoded.data.block;
-        // if (adminBlock!="MH-*" || adminBlock!="LH-*") {
-        //     return res.status(400).json({message: "Only main office can register block admins or main office admins."});
-        // }
+        if (!req.decoded || req.decoded.data.role!="admin") {
+            res.status(403).json({message: "Access denied, admin only."});
+            return;
+        }
+        const adminBlock = req.decoded.data.block;
+        if (adminBlock!="MH-*" || adminBlock!="LH-*") {
+            return res.status(400).json({message: "Only main hostel office can register block admins or other main hostel office admins."});
+        }
         let {name, email_id, phone_no, block, password} = req.body;
         const admin = await admins.findOne({email_id: email_id, block: block});
         if (admin) {

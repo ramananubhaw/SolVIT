@@ -2,14 +2,9 @@ import client from "../config/hfClient.js";
 
 export default async function categorizeComplaint(complaint) {
 
-    // const summary = await client.summarization({
-    //     model: "facebook/bart-large-cnn",
-    //     inputs: complaint,
-    // });
-
     const output = await client.zeroShotClassification({
         model: "facebook/bart-large-mnli",
-        inputs: complaint,
+        inputs: [complaint],
         parameters: {
             candidate_labels: ["Normal", "Problematic", "Critical"],
         }
@@ -28,3 +23,4 @@ export default async function categorizeComplaint(complaint) {
 
     return { label, score };
 };
+
