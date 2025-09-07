@@ -22,7 +22,7 @@ function App() {
         <ComplaintProvider>
           <div className="flex flex-col min-h-screen bg-app-bg text-app-text">
             <Navbar />
-            <main className="flex-grow container mx-auto px-4 py-8">
+            <main className="flex-grow container mx-auto px-4 pt-16 pb-8">
               <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/login" element={<Login />} />
