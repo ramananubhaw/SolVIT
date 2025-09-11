@@ -47,8 +47,13 @@ connectDB()
         // console.log(label, score);
         cron.schedule("*/10 * * * *", async () => {
             try {
-                const res = await axios.get(process.env.SERVER_URL);
-                console.log("Cron job executed:", res.status, res.statusText);
+                // Ping backend
+                const res1 = await axios.get(process.env.SERVER_URL);
+                console.log("Server ping executed:", res1.status, res1.statusText);
+
+                // Ping frontend
+                const res2 = await axios.get(process.env.CLIENT_URL);
+                console.log("Client ping executed:", res2.status, res2.statusText);
             }
             catch (err) {
                 console.error("Cron job failed:", err.message);
